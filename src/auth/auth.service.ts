@@ -17,7 +17,6 @@ export class AuthService {
 
     private jwtService: JwtService
 
-
   ) { }
 
   async create(createAuthDto: CreateUserDto) {
@@ -38,7 +37,7 @@ export class AuthService {
       // Retornar el JWT
       return {
         ...user,
-        access_token: this.generateJwtToken({ email: user.email })
+        access_token: this.generateJwtToken({ id: user.id })
       }
     } catch (error) {
       this.handleDBErrors(error);
@@ -48,9 +47,15 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto) {
     const { password, email } = loginUserDto;
 
-    const user = await this.userRepository.findOneBy({ email });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+      }
+    });
 
-    console.log(user)
     if (!user)
       throw new UnauthorizedException('Credenciales no válidas');
 
@@ -60,7 +65,7 @@ export class AuthService {
     // Retornar el JWT
     return {
       ...user,
-      access_token: this.generateJwtToken({ email: user.email })
+      access_token: this.generateJwtToken({ id: user.id })
     }
   }
 
